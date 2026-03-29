@@ -1,0 +1,191 @@
+syntax = "proto3";
+
+package parser.test;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/any.proto";
+import "google/protobuf/struct.proto";
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/empty.proto";
+
+enum Color {
+  COLOR_UNSPECIFIED = 0;
+  COLOR_RED = 1;
+  COLOR_GREEN = 2;
+  COLOR_BLUE = 3;
+}
+
+enum Direction {
+  option allow_alias = true;
+  DIRECTION_UNSPECIFIED = 0;
+  DIRECTION_NORTH = 1;
+  DIRECTION_UP = 1;
+  DIRECTION_SOUTH = 2;
+  DIRECTION_EAST = 3;
+  DIRECTION_WEST = 4;
+}
+
+message AllScalars {
+  int32 f_int32 = 1;
+  int64 f_int64 = 2;
+  uint32 f_uint32 = 3;
+  uint64 f_uint64 = 4;
+  sint32 f_sint32 = 5;
+  sint64 f_sint64 = 6;
+  fixed32 f_fixed32 = 7;
+  fixed64 f_fixed64 = 8;
+  sfixed32 f_sfixed32 = 9;
+  sfixed64 f_sfixed64 = 10;
+  float f_float = 11;
+  double f_double = 12;
+  bool f_bool = 13;
+  string f_string = 14;
+  bytes f_bytes = 15;
+}
+
+message AllRepeated {
+  repeated int32 r_int32 = 1;
+  repeated int64 r_int64 = 2;
+  repeated uint32 r_uint32 = 3;
+  repeated uint64 r_uint64 = 4;
+  repeated sint32 r_sint32 = 5;
+  repeated sint64 r_sint64 = 6;
+  repeated fixed32 r_fixed32 = 7;
+  repeated fixed64 r_fixed64 = 8;
+  repeated float r_float = 9;
+  repeated double r_double = 10;
+  repeated bool r_bool = 11;
+  repeated string r_string = 12;
+  repeated bytes r_bytes = 13;
+  repeated Color r_enum = 14;
+  repeated AllScalars r_message = 15;
+}
+
+message AllMaps {
+  map<string,string> m_string_string = 1;
+  map<string,int32> m_string_int32 = 2;
+  map<string,int64> m_string_int64 = 3;
+  map<string,uint32> m_string_uint32 = 4;
+  map<string,uint64> m_string_uint64 = 5;
+  map<string,float> m_string_float = 6;
+  map<string,double> m_string_double = 7;
+  map<string,bool> m_string_bool = 8;
+  map<string,bytes> m_string_bytes = 9;
+  map<string,Color> m_string_enum = 10;
+  map<string,AllScalars> m_string_msg = 11;
+  map<int32,string> m_int32_string = 12;
+  map<int64,string> m_int64_string = 13;
+  map<uint32,string> m_uint32_string = 14;
+  map<uint64,string> m_uint64_string = 15;
+  map<sint32,string> m_sint32_string = 16;
+  map<sint64,string> m_sint64_string = 17;
+  map<fixed32,string> m_fixed32_string = 18;
+  map<fixed64,string> m_fixed64_string = 19;
+  map<bool,string> m_bool_string = 20;
+}
+
+message AllOneofs {
+  string shared_field = 1;
+
+  oneof scalar_choice {
+    int32 choice_int32 = 2;
+    double choice_double = 3;
+    bool choice_bool = 4;
+    string choice_string = 5;
+    bytes choice_bytes = 6;
+  }
+
+  oneof typed_choice {
+    Color choice_enum = 7;
+    AllScalars choice_message = 8;
+  }
+}
+
+message Outer {
+  string outer_field = 1;
+
+  message Inner {
+    string inner_field = 2;
+
+    message DeepInner {
+      int32 deep_field = 3;
+    }
+
+    DeepInner deep = 4;
+  }
+
+  Inner inner = 5;
+
+  enum InnerEnum {
+    INNER_ENUM_UNSPECIFIED = 0;
+    INNER_ENUM_A = 1;
+    INNER_ENUM_B = 2;
+  }
+
+  InnerEnum inner_enum = 6;
+}
+
+message AllWellKnown {
+  google.protobuf.Timestamp timestamp = 1;
+  google.protobuf.Duration duration = 2;
+  google.protobuf.BoolValue wrap_bool = 3;
+  google.protobuf.Int32Value wrap_int32 = 4;
+  google.protobuf.Int64Value wrap_int64 = 5;
+  google.protobuf.UInt32Value wrap_uint32 = 6;
+  google.protobuf.UInt64Value wrap_uint64 = 7;
+  google.protobuf.FloatValue wrap_float = 8;
+  google.protobuf.DoubleValue wrap_double = 9;
+  google.protobuf.StringValue wrap_string = 10;
+  google.protobuf.BytesValue wrap_bytes = 11;
+  google.protobuf.Any any_field = 12;
+  google.protobuf.Struct struct_field = 13;
+  google.protobuf.Value value_field = 14;
+  google.protobuf.FieldMask field_mask = 15;
+}
+
+message DeprecatedMessage {
+  option deprecated = true;
+  string old_field = 1;
+}
+
+message WithFieldOptions {
+  string active_field = 1;
+  string old_field = 2 [deprecated = true];
+  repeated int32 packed_ints = 3 [packed = true];
+}
+
+message WithReserved {
+  string current_field = 1;
+  reserved 2, 3;
+  reserved 10 to 20;
+  reserved "old_name", "another_old_name";
+}
+
+message ParserTestRoot {
+  string id = 1;
+  string label = 2;
+  AllScalars scalars = 3;
+  AllRepeated repeated_fields = 4;
+  AllMaps maps = 5;
+  AllOneofs oneofs = 6;
+  Outer nested = 7;
+  AllWellKnown well_known = 8;
+  Color color = 9;
+  Direction direction = 10;
+  WithFieldOptions field_options = 11;
+  WithReserved reserved_demo = 12;
+  repeated AllScalars scalar_list = 13;
+  repeated AllMaps map_list = 14;
+  map<string,AllScalars> scalar_index = 15;
+  map<string,AllOneofs> oneof_index = 16;
+  google.protobuf.Timestamp created_at = 17;
+  google.protobuf.Any extra = 18;
+  google.protobuf.FieldMask update_mask = 19;
+}
+
+message FloatTest {
+  float f_float = 1;
+  double f_double = 2;
+}
