@@ -34,10 +34,10 @@ public class ParserBenchmarks
     }
 
     [Benchmark(Baseline = true)]
-    public ParserTestRoot Google_ParseParserTestRoot()
+    public ParserTestRoot GoogleProtobuf_JsonParser()
         => GoogleParser.Parse<ParserTestRoot>(_json);
 
     [Benchmark]
-    public ParserTestRoot Custom_ParseParserTestRoot()
+    public ParserTestRoot JsonParserPerformance_JsonParser()
         => JsonParserPerf.Parse<ParserTestRoot>(_json);
 }

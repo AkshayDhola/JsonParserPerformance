@@ -12,8 +12,8 @@ Tested against the full `ParserTestRoot` message — a composite message coverin
  
 | Method                     | Mean     | Ratio | Gen0   | Gen1   | Allocated | Alloc Ratio |
 |--------------------------- |---------:|------:|-------:|-------:|----------:|------------:|
-| Google_ParseParserTestRoot | 90.61 µs |  1.01 | 9.3994 | 0.2441 |  38.75 KB |        1.00 |
-| Custom_ParseParserTestRoot | 55.17 µs |  **0.62** | 4.6387 |      - |  **19.19 KB** |        **0.50** |
+| GoogleProtobuf_JsonParser | 90.61 µs |  1.01 | 9.3994 | 0.2441 |  38.75 KB |        1.00 |
+| JsonParserPerformance_JsonParser | 55.17 µs |  **0.62** | 4.6387 |      - |  **19.19 KB** |        **0.50** |
  
 
 | Metric | Improvement |
