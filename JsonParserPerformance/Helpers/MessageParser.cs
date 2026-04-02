@@ -1,7 +1,6 @@
 ﻿using Google.Protobuf;
 using Google.Protobuf.Reflection;
 using JsonParserPerformance.Protobuf;
-using System.Buffers;
 using System.Collections;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
@@ -41,27 +40,27 @@ internal static class MessageParser
                 throw new JsonException("Expected PropertyName");
             }
 
-            var fieldAcceccorInfo = fieldLookup.Find(reader.ValueSpan);
+            var fieldAccessorInfo = fieldLookup.Find(reader.ValueSpan);
 
-            if (fieldAcceccorInfo == null)
+            if (fieldAccessorInfo == null)
             {
                 reader.Skip();
                 continue;
             }
 
-            reader.Read(); // Move to value
+            reader.Read();
 
-            if (fieldAcceccorInfo.IsMap)
+            if (fieldAccessorInfo.IsMap)
             {
-                ParseMap(message, fieldAcceccorInfo, ref reader);
+                ParseMap(message, fieldAccessorInfo, ref reader);
             }
-            else if (fieldAcceccorInfo.IsRepeated)
+            else if (fieldAccessorInfo.IsRepeated)
             {
-                ParseRepeated(message, fieldAcceccorInfo, ref reader);
+                ParseRepeated(message, fieldAccessorInfo, ref reader);
             }
             else
             {
-                fieldAcceccorInfo.SetValue(message, ParseValue(fieldAcceccorInfo, ref reader));
+                fieldAccessorInfo.SetValue(message, ParseValue(fieldAccessorInfo, ref reader));
             }
         }
     }
@@ -69,16 +68,16 @@ internal static class MessageParser
     /// <summary>
     /// Parses a value from the provided JSON reader according to the specified field accessor information.
     /// </summary>
-    /// <param name="fieldAcceccorInfo">The metadata describing the field to parse, including its type and any relevant field information.</param>
+    /// <param name="fieldAccessorInfo">The metadata describing the field to parse, including its type and any relevant field information.</param>
     /// <param name="reader">A reference to the JSON reader positioned at the value to parse. The reader will be advanced past the parsed
     /// value.</param>
     /// <returns>An object representing the parsed value, typed according to the field information. Returns null if the value is
     /// null in the JSON input.</returns>
-    /// <exception cref="NotSupportedException">Thrown if the field type specified in fieldAcceccorInfo is not supported for parsing.</exception>
+    /// <exception cref="NotSupportedException">Thrown if the field type specified in fieldAccessorInfo is not supported for parsing.</exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static object? ParseValue(FieldAccessorInfo fieldAcceccorInfo, ref Utf8JsonReader reader)
+    private static object? ParseValue(FieldAccessorInfo fieldAccessorInfo, ref Utf8JsonReader reader)
     {
-        return fieldAcceccorInfo.FieldType switch
+        return fieldAccessorInfo.FieldType switch
         {
             FieldType.Int32 or FieldType.SInt32 or FieldType.SFixed32 => PrimitiveParser.GetNumeric<int>(ref reader),
             FieldType.Int64 or FieldType.SInt64 or FieldType.SFixed64 => PrimitiveParser.GetNumeric<long>(ref reader),
@@ -89,9 +88,9 @@ internal static class MessageParser
             FieldType.Bool => PrimitiveParser.GetBool(ref reader),
             FieldType.String => reader.GetString(),
             FieldType.Bytes => PrimitiveParser.ParseBytes(ref reader),
-            FieldType.Enum => PrimitiveParser.ParseEnum(fieldAcceccorInfo.Field, ref reader),
-            FieldType.Message => ParseMessage(fieldAcceccorInfo, ref reader),
-            _ => throw new NotSupportedException($"Unsupported: {fieldAcceccorInfo.FieldType}")
+            FieldType.Enum => PrimitiveParser.ParseEnum(fieldAccessorInfo.Field, ref reader),
+            FieldType.Message => ParseMessage(fieldAccessorInfo, ref reader),
+            _ => throw new NotSupportedException($"Unsupported: {fieldAccessorInfo.FieldType}")
         };
     }
 
@@ -100,30 +99,30 @@ internal static class MessageParser
     /// message instance.
     /// </summary>
     /// <param name="message">The message instance to which the parsed repeated field values will be added.</param>
-    /// <param name="fieldAcceccorInfo">The field accessor information describing the repeated field to parse and set.</param>
+    /// <param name="fieldAccessorInfo">The field accessor information describing the repeated field to parse and set.</param>
     /// <param name="reader">The JSON reader positioned at the start of the array to parse. The reader is advanced as values are read.</param>
     /// <exception cref="JsonException">Thrown if the current token in the reader is not the start of a JSON array.</exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void ParseRepeated(IMessage message, FieldAccessorInfo fieldAcceccorInfo, ref Utf8JsonReader reader)
+    private static void ParseRepeated(IMessage message, FieldAccessorInfo fieldAccessorInfo, ref Utf8JsonReader reader)
     {
         if (reader.TokenType != JsonTokenType.StartArray)
         {
             throw new JsonException("Expected array");
         }
 
-        var list = (IList)fieldAcceccorInfo.GetValue(message);
-        if (fieldAcceccorInfo.FieldType == FieldType.Message)
+        var list = (IList)fieldAccessorInfo.GetValue(message);
+        if (fieldAccessorInfo.FieldType == FieldType.Message)
         {
             while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
             {
-                list.Add(ParseMessage(fieldAcceccorInfo, ref reader));
-            }
+                list.Add(ParseMessage(fieldAccessorInfo, ref reader));
+    }
         }
         else
         {
             while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
             {
-                list.Add(ParseValue(fieldAcceccorInfo, ref reader));
+                list.Add(ParseValue(fieldAccessorInfo, ref reader));
             }
         }
     }
@@ -133,29 +132,29 @@ internal static class MessageParser
     /// key-value pairs.
     /// </summary>
     /// <param name="message">The message instance whose map field will be populated.</param>
-    /// <param name="fieldAcceccorInfo">The accessor information for the map field to be populated, including metadata about the key and value types.</param>
+    /// <param name="fieldAccessorInfo">The accessor information for the map field to be populated, including metadata about the key and value types.</param>
     /// <param name="reader">The JSON reader positioned at the start of the object to parse. The reader is advanced as the map is read.</param>
     /// <exception cref="JsonException">Thrown if the JSON does not represent a valid object or if a property name is not found where expected.</exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void ParseMap(IMessage message, FieldAccessorInfo fieldAcceccorInfo, ref Utf8JsonReader reader)
+    private static void ParseMap(IMessage message, FieldAccessorInfo fieldAccessorInfo, ref Utf8JsonReader reader)
     {
         if (reader.TokenType != JsonTokenType.StartObject)
         {
             throw new JsonException("Expected object for map");
         }
 
-        var map = fieldAcceccorInfo.GetValue(message);
+        var map = fieldAccessorInfo.GetValue(message);
         var adder = ParserCache.GetOrAddMapAdder(map.GetType());
 
-        var keyField = fieldAcceccorInfo.MapKeyField!;
-        var valueMeta = fieldAcceccorInfo.MapValueMeta!;
+        var keyField = fieldAccessorInfo.MapKeyField!;
+        var valueMeta = fieldAccessorInfo.MapValueMeta!;
 
         while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
         {
             if (reader.TokenType != JsonTokenType.PropertyName)
             {
                 throw new JsonException("Expected property name");
-            }
+    }
 
             var key = keyField.FieldType == FieldType.String ?
                         reader.GetString() :
@@ -179,7 +178,7 @@ internal static class MessageParser
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static object ParseMapKey(FieldType fieldType, ref Utf8JsonReader reader) =>
         fieldType switch
-        {
+    {
             FieldType.Int32 or FieldType.SInt32 or FieldType.SFixed32
                 => PrimitiveParser.GetNumeric<int>(ref reader),
 
@@ -202,20 +201,20 @@ internal static class MessageParser
     /// Parses a JSON value from the reader as a well-known Protobuf type or a nested message, based on the provided
     /// field accessor information.
     /// </summary>
-    /// <param name="fieldAcceccorInfo">The field accessor information that specifies the expected Protobuf well-known type or message type to parse.</param>
+    /// <param name="fieldAccessorInfo">The field accessor information that specifies the expected Protobuf well-known type or message type to parse.</param>
     /// <param name="reader">The JSON reader positioned at the value to parse. The reader is advanced past the parsed value.</param>
     /// <returns>An object representing the parsed value, which may be a well-known Protobuf type, a primitive value, or a nested
     /// message. Returns null if the JSON token is null.</returns>
     /// <exception cref="JsonException">Thrown if the JSON token is not valid for the expected message type, such as when a nested message does not
     /// start with a JSON object.</exception>
-    private static object? ParseMessage(FieldAccessorInfo fieldAcceccorInfo, ref Utf8JsonReader reader)
+    private static object? ParseMessage(FieldAccessorInfo fieldAccessorInfo, ref Utf8JsonReader reader)
     {
         if (reader.TokenType == JsonTokenType.Null)
         {
             return null;
         }
 
-        switch (fieldAcceccorInfo.Wkt)
+        switch (fieldAccessorInfo.Wkt)
         {
             case WellKnownType.Timestamp: return WellKnownParser.ParseTimestamp(ref reader);
             case WellKnownType.Duration: return WellKnownParser.ParseDuration(ref reader);
@@ -244,7 +243,7 @@ internal static class MessageParser
             throw new JsonException($"Expected StartObject for nested message, got {reader.TokenType}");
         }
 
-        var msg = (IMessage)Activator.CreateInstance(fieldAcceccorInfo.ClrType!)!;
+        var msg = (IMessage)Activator.CreateInstance(fieldAccessorInfo.ClrType!)!;
         var msgMeta = ParserCache.GetOrCreateFieldLookup(msg);
 
         ParseObject(msg, msgMeta, ref reader);
@@ -284,22 +283,34 @@ internal static class MessageParser
         var innerMsg = (IMessage)Activator.CreateInstance(clrType)!;
         var innerMeta = ParserCache.GetOrCreateFieldLookup(innerMsg);
 
-        var buf = new ArrayBufferWriter<byte>(512);
-        using (var wtr = new Utf8JsonWriter(buf))
+        var buf = ArrayBufferWriterPool.Rent();
+        try
         {
-            wtr.WriteStartObject();
-            foreach (var prop in root.EnumerateObject().Where(prop => !prop.NameEquals("@type"u8)))
+            using (var wtr = new Utf8JsonWriter(buf))
             {
-                prop.WriteTo(wtr);
+                wtr.WriteStartObject();
+                foreach (var prop in root.EnumerateObject())
+                {
+                    if (prop.NameEquals("@type"u8))
+                    {
+                        continue;
+                    }
+
+                    prop.WriteTo(wtr);
+                }
+
+                wtr.WriteEndObject();
             }
 
-            wtr.WriteEndObject();
+            var innerReader = new Utf8JsonReader(buf.WrittenSpan);
+            innerReader.Read();
+            ParseObject(innerMsg, innerMeta, ref innerReader);
+        }
+        finally
+        {
+            ArrayBufferWriterPool.Return(buf);
         }
 
-        var innerReader = new Utf8JsonReader(buf.WrittenSpan);
-        innerReader.Read(); // Position at StartObject
-
-        ParseObject(innerMsg, innerMeta, ref innerReader);
         any.Value = innerMsg.ToByteString();
         return any;
     }

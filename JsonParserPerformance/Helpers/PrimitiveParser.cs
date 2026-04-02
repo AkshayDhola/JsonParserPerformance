@@ -107,7 +107,8 @@ internal static class PrimitiveParser
     /// <returns>An object representing the parsed enum value. Returns 0 if the token is null or an empty string.</returns>
     /// <exception cref="Exception">Thrown if the token value does not correspond to a valid enum name or numeric value for the specified enum
     /// type.</exception>
-    public static object ParseEnum(FieldDescriptor field, ref Utf8JsonReader reader)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static int ParseEnum(FieldDescriptor field, ref Utf8JsonReader reader)
     {
         if (reader.TokenType == JsonTokenType.Null)
         {
@@ -118,10 +119,10 @@ internal static class PrimitiveParser
 
         var str = reader.GetString();
         if (string.IsNullOrWhiteSpace(str)) return 0;
-        if (int.TryParse(str, out var num)) return num;
+        if (int.TryParse(str, out int num)) return num;
 
         var nameMap = ParserCache.GetOrAddEnum(field.EnumType);
 
-        return nameMap.TryGetValue(str, out var found) ? found : throw new JsonException($"Unknown enum: {str}");
+        return nameMap.TryGetValue(str, out int found) ? found : throw new JsonException($"Unknown enum: {str}");
     }
 }

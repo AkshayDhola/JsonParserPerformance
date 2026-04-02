@@ -1,68 +1,25 @@
-# JsonParserPerformance
+# *JsonParserPerformance*
 
-[![.NET](https://img.shields.io/badge/.NET-8.0-512BD4?logo=dotnet)](https://dotnet.microsoft.com/)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+*JsonParserPerformance is a high-performance JSON parser for Protobuf messages in .NET, designed for speed and minimal memory allocation.*
 
-A high-performance Protobuf JSON parser for .NET, built as a faster, lower-allocation drop-in alternative to `Google.Protobuf`'s built-in `JsonParser`.
 
-## Benchmark Results
- 
-Tested against the full `ParserTestRoot` message — a composite message covering every Protobuf field type (scalars, repeated, maps, oneofs, well-known types, nested messages, enums).
- 
-| Method                     | Mean     | Ratio | Gen0   | Gen1   | Allocated | Alloc Ratio |
-|--------------------------- |---------:|------:|-------:|-------:|----------:|------------:|
-| GoogleProtobuf_JsonParser | 90.61 µs |  1.01 | 9.3994 | 0.2441 |  38.75 KB |        1.00 |
-| JsonParserPerformance_JsonParser | 55.17 µs |  **0.62** | 4.6387 |      - |  **19.19 KB** |        **0.50** |
- 
-
-| Metric | Improvement |
-|--------|-------------|
-|**Speed** | ~39% faster parsing |
-|**Memory** | ~50% less memory allocation |
-|**Gen0 GC** | ~51% reduction in Gen0 collections |
-|**Gen1 GC** | Zero Gen1 allocations |
-
-> Benchmarks run with [BenchmarkDotNet](https://benchmarkdotnet.org). See [`ParserBenchmarks.cs`](JsonParserPerformance.Benchmark/ParserBenchmarks.cs) to reproduce.
-
-## Getting Started
- 
-### Installation
-  
-```bash
-git clone https://github.com/AkshayDhola/JsonParserPerformance.git
-```
-
-### Usage
- 
-```csharp
+## *Getting Started*
+```cs
 using JsonParserPerformance;
- 
-// Drop-in replacement for Google.Protobuf.JsonParser
+
+// Parse using the high-performance parser
 IMessageProtobuf result = JsonParser.Parse<IMessageProtobuf>(jsonStr);
 
-// Optionally, you can also use the static parser directly:
+// Alternatively, use the generated Protobuf parser
 IMessageProtobuf result = IMessageProtobuf.Parser.ParseFrom(jsonStr);
 ```
- 
-## Development
 
-# Run Tests
- 
-```bash
-dotnet test JsonParserPerformance.UnitTests
+## *Benchmark*
+
+```md
+
+| Method                           | Mean     | Error    | StdDev   | Ratio | Gen0   | Gen1   | Allocated | Alloc Ratio |
+|----------------------------------|---------:|---------:|---------:|------:|-------:|-------:|----------:|------------:|
+| GoogleProtobuf_JsonParser        | 80.42 us | 1.52 us  | 1.81 us  | 1.00  | 9.3994 | 0.2441 | 38.75 KB  | 1.00        |
+| JsonParserPerformance_JsonParser | 53.34 us | 1.05 us  | 1.54 us  | 0.66  | 4.1504 | —      | 17.78 KB  | 0.46        |
 ```
- 
-# Running Benchmarks
- 
-```bash
-dotnet run --project JsonParserPerformance.Benchmark -c Release
-```
- 
-## Contributing
- 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
- 
-## License
- 
-MIT — see [LICENSE](LICENSE) for details.
