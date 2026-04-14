@@ -64,26 +64,26 @@ message AllRepeated {
 }
 
 message AllMaps {
-  map<string,string> m_string_string = 1;
-  map<string,int32> m_string_int32 = 2;
-  map<string,int64> m_string_int64 = 3;
-  map<string,uint32> m_string_uint32 = 4;
-  map<string,uint64> m_string_uint64 = 5;
-  map<string,float> m_string_float = 6;
-  map<string,double> m_string_double = 7;
-  map<string,bool> m_string_bool = 8;
-  map<string,bytes> m_string_bytes = 9;
-  map<string,Color> m_string_enum = 10;
-  map<string,AllScalars> m_string_msg = 11;
-  map<int32,string> m_int32_string = 12;
-  map<int64,string> m_int64_string = 13;
-  map<uint32,string> m_uint32_string = 14;
-  map<uint64,string> m_uint64_string = 15;
-  map<sint32,string> m_sint32_string = 16;
-  map<sint64,string> m_sint64_string = 17;
-  map<fixed32,string> m_fixed32_string = 18;
-  map<fixed64,string> m_fixed64_string = 19;
-  map<bool,string> m_bool_string = 20;
+  map<string, string> m_string_string = 1;
+  map<string, int32> m_string_int32 = 2;
+  map<string, int64> m_string_int64 = 3;
+  map<string, uint32> m_string_uint32 = 4;
+  map<string, uint64> m_string_uint64 = 5;
+  map<string, float> m_string_float = 6;
+  map<string, double> m_string_double = 7;
+  map<string, bool> m_string_bool = 8;
+  map<string, bytes> m_string_bytes = 9;
+  map<string, Color> m_string_enum = 10;
+  map<string, AllScalars> m_string_msg = 11;
+  map<int32, string> m_int32_string = 12;
+  map<int64, string> m_int64_string = 13;
+  map<uint32, string> m_uint32_string = 14;
+  map<uint64, string> m_uint64_string = 15;
+  map<sint32, string> m_sint32_string = 16;
+  map<sint64, string> m_sint64_string = 17;
+  map<fixed32, string> m_fixed32_string = 18;
+  map<fixed64, string> m_fixed64_string = 19;
+  map<bool, string> m_bool_string = 20;
 }
 
 message AllOneofs {
@@ -178,8 +178,8 @@ message ParserTestRoot {
   WithReserved reserved_demo = 12;
   repeated AllScalars scalar_list = 13;
   repeated AllMaps map_list = 14;
-  map<string,AllScalars> scalar_index = 15;
-  map<string,AllOneofs> oneof_index = 16;
+  map<string, AllScalars> scalar_index = 15;
+  map<string, AllOneofs> oneof_index = 16;
   google.protobuf.Timestamp created_at = 17;
   google.protobuf.Any extra = 18;
   google.protobuf.FieldMask update_mask = 19;

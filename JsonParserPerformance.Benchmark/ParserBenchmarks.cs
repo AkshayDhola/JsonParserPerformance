@@ -1,4 +1,7 @@
 ﻿using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Diagnosers;
+using BenchmarkDotNet.Jobs;
+using BenchmarkDotNet.Order;
 using Google.Protobuf.Reflection;
 using JsonParserPerformance.UnitTests.TestData;
 using Parser.Test;
@@ -8,6 +11,9 @@ using JsonParserGoogle = Google.Protobuf.JsonParser;
 namespace JsonParserPerformance.Benchmark;
 
 [MemoryDiagnoser]
+[SimpleJob(RuntimeMoniker.Net80, warmupCount: 20, iterationCount: 100)]
+[Orderer(SummaryOrderPolicy.FastestToSlowest)]
+[OperationsPerSecond]
 public class ParserBenchmarks
 {
     private static readonly TypeRegistry Registry = TypeRegistry.FromMessages(
@@ -30,7 +36,7 @@ public class ParserBenchmarks
     [GlobalSetup]
     public void Setup()
     {
-        _json = Sample.Json;
+        _json = JsonTestData.Json;
     }
 
     [Benchmark(Baseline = true)]
