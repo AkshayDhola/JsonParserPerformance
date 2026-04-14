@@ -1,4 +1,4 @@
-name: .NET CI
+name: .NET CI + CodeQL
 
 on:
   push:
@@ -9,17 +9,27 @@ on:
       - '**'
 
 jobs:
-  build-test:
+  build-test-codeql:
     runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    permissions:
+      contents: read
+      security-events: write
 
-      - name: Setup .NET 8
-        uses: actions/setup-dotnet@v4
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: '8.0.x'
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: csharp
+          build-mode: manual
 
       - name: Restore dependencies
         run: dotnet restore
@@ -29,4 +39,7 @@ jobs:
 
       # Run ONLY unit tests project (skip benchmark)
       - name: Run unit tests
-        run: dotnet test JsonParserPerformance.UnitTests/JsonParserPerformance.UnitTests.csproj --configuration Release --no-build --verbosity normal
+        run: dotnet test JsonParserPerformance.UnitTests/JsonParserPerformance.UnitTests.csproj --configuration Release --no-build
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
