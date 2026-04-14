@@ -25,24 +25,17 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-      # Cache NuGet packages
-      - name: Cache NuGet packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
-          restore-keys: |
-            ${{ runner.os }}-nuget-
-
-      # Initialize CodeQL (no manual mode)
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:
           languages: csharp
+          build-mode: manual
 
-      # Autobuild (critical for correct CodeQL analysis)
-      - name: Autobuild
-        uses: github/codeql-action/autobuild@v3
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build solution
+        run: dotnet build --configuration Release --no-restore -warnaserror
 
       # Run ONLY unit tests project (skip benchmark)
       - name: Run unit tests
